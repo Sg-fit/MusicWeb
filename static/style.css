@@ -111,3 +111,9 @@ button[type=submit]{align-self:flex-start;background:var(--accent);color:var(--a
 .tbl th,.tbl td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
 .tbl th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
 .tbl tr:last-child td{border-bottom:none}
+
+/* ---- upload form extras ---- */
+.hint{display:block;margin-top:4px;color:var(--muted);font-size:12px;font-weight:400}
+.or-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:2px 0}
+.or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+input[type=file]{padding:8px;background:var(--bg);border:1px dashed var(--line);border-radius:9px;cursor:pointer;width:100%}

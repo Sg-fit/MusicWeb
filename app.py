@@ -26,21 +26,28 @@ import random
 import secrets
 import sqlite3
 import time
+import uuid
 from urllib.parse import quote, urlparse
 
 from flask import (
     Flask, g, request, redirect, url_for, render_template,
     make_response, jsonify, abort,
 )
+from werkzeug.utils import secure_filename
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(APP_DIR, "freshfeed.db")
+UPLOAD_DIR = os.path.join(APP_DIR, "static", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024   # 25 MB max upload
 
 DISCOVER_LIMIT = 12       # tracks shown per Discover visit
 RATE_PRIOR = 5            # smoothing for the like-rate ranking
 VARIANTS = ("fair", "popular")
+ALLOWED_UPLOAD = {".mp3", ".wav", ".ogg", ".m4a", ".flac"}
+MAX_MB = 25
 
 
 # --------------------------------------------------------------------------- #
@@ -230,19 +237,37 @@ def submit():
         artist = (request.form.get("artist") or "").strip() or "Anonymous"
         url = (request.form.get("url") or "").strip()
         note = (request.form.get("note") or "").strip()[:280]
+        upload = request.files.get("audio")
+        has_upload = bool(upload and upload.filename)
 
         errors = []
         if not title:
             errors.append("Please give your track a title.")
-        if not url or not re.match(r"^https?://", url):
-            errors.append("Please paste a valid link (starting with http).")
+        if not has_upload and not url:
+            errors.append("Upload an audio file or paste a link.")
+        if url and not re.match(r"^https?://", url):
+            errors.append("That link doesn't look valid (it should start with http).")
+
+        kind = embed = None
+        if has_upload and not errors:
+            ext = os.path.splitext(upload.filename)[1].lower()
+            if ext not in ALLOWED_UPLOAD:
+                errors.append("Audio must be one of: " + ", ".join(sorted(ALLOWED_UPLOAD)))
+            else:
+                fname = f"{uuid.uuid4().hex}{ext}"
+                upload.save(os.path.join(UPLOAD_DIR, fname))
+                url = url_for("static", filename=f"uploads/{fname}")
+                kind, embed = "audio", url
+
         if errors:
             resp = make_response(render_template(
                 "submit.html", errors=errors,
-                title=title, artist=artist, url=url, note=note))
+                title=title, artist=artist, url=request.form.get("url", ""), note=note))
             return attach_cookies(resp)
 
-        kind, embed = classify_link(url)
+        if kind is None:               # no file uploaded → treat as a pasted link
+            kind, embed = classify_link(url)
+
         db = get_db()
         cur = db.execute(
             """INSERT INTO tracks (title, artist, url, kind, embed, note, created_at)
@@ -254,6 +279,13 @@ def submit():
     get_anon_id(); get_variant()
     resp = make_response(render_template("submit.html", errors=None))
     return attach_cookies(resp)
+
+
+@app.errorhandler(413)
+def too_large(e):
+    resp = make_response(render_template(
+        "submit.html", errors=[f"That file is too big — max {MAX_MB} MB."]), 413)
+    return resp
 
 
 @app.route("/track/<int:track_id>")
