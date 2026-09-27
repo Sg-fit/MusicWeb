@@ -96,6 +96,21 @@ def init_db():
             body       TEXT NOT NULL,
             created_at REAL NOT NULL
         );
+        -- general discussion board (not tied to a track)
+        CREATE TABLE IF NOT EXISTS discussions (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            anon_id    TEXT NOT NULL,
+            title      TEXT NOT NULL,
+            body       TEXT NOT NULL,
+            created_at REAL NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS discussion_replies (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            discussion_id INTEGER NOT NULL,
+            anon_id       TEXT NOT NULL,
+            body          TEXT NOT NULL,
+            created_at    REAL NOT NULL
+        );
         -- event log powers the A/B analysis
         CREATE TABLE IF NOT EXISTS events (
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -351,6 +366,65 @@ def comment(track_id):
 
 
 # --------------------------------------------------------------------------- #
+# Discussion board (general, not tied to a track)
+# --------------------------------------------------------------------------- #
+@app.route("/discuss", methods=["GET", "POST"])
+def discuss():
+    db = get_db()
+    anon = get_anon_id(); get_variant()
+
+    if request.method == "POST":
+        title = (request.form.get("title") or "").strip()[:140]
+        body = (request.form.get("body") or "").strip()[:2000]
+        if title and body:
+            cur = db.execute(
+                "INSERT INTO discussions (anon_id, title, body, created_at) VALUES (?,?,?,?)",
+                (anon, title, body, time.time()))
+            db.commit()
+            return attach_cookies(make_response(
+                redirect(url_for("thread", disc_id=cur.lastrowid))))
+
+    # list threads with reply counts, newest activity first
+    rows = db.execute(
+        """SELECT d.*,
+                  (SELECT COUNT(*) FROM discussion_replies r WHERE r.discussion_id = d.id) AS replies,
+                  (SELECT MAX(created_at) FROM discussion_replies r WHERE r.discussion_id = d.id) AS last_reply
+           FROM discussions d
+           ORDER BY COALESCE(last_reply, d.created_at) DESC""").fetchall()
+    resp = make_response(render_template(
+        "discuss.html", threads=rows, anon_name=anon_name(anon)))
+    return attach_cookies(resp)
+
+
+@app.route("/discuss/<int:disc_id>")
+def thread(disc_id):
+    db = get_db()
+    anon = get_anon_id(); get_variant()
+    d = db.execute("SELECT * FROM discussions WHERE id = ?", (disc_id,)).fetchone()
+    if d is None:
+        abort(404)
+    replies = db.execute(
+        "SELECT * FROM discussion_replies WHERE discussion_id = ? ORDER BY created_at ASC",
+        (disc_id,)).fetchall()
+    resp = make_response(render_template(
+        "thread.html", d=d, replies=replies, anon_name=anon_name(anon)))
+    return attach_cookies(resp)
+
+
+@app.route("/discuss/<int:disc_id>/reply", methods=["POST"])
+def discuss_reply(disc_id):
+    body = (request.form.get("body") or "").strip()[:2000]
+    if body:
+        db = get_db()
+        anon = get_anon_id()
+        db.execute(
+            "INSERT INTO discussion_replies (discussion_id, anon_id, body, created_at) VALUES (?,?,?,?)",
+            (disc_id, anon, body, time.time()))
+        db.commit()
+    return attach_cookies(make_response(redirect(url_for("thread", disc_id=disc_id))))
+
+
+# --------------------------------------------------------------------------- #
 # Stats — the experiment dashboard
 # --------------------------------------------------------------------------- #
 @app.route("/stats")
@@ -423,6 +497,10 @@ def inject_helpers():
     return dict(like_rate=like_rate)
 
 
+# Ensure the schema exists on every startup (incl. under gunicorn), so new
+# tables like the discussion board are created automatically after a deploy.
+init_db()
+
+
 if __name__ == "__main__":
-    init_db()
     app.run(host="0.0.0.0", port=5000, debug=True)

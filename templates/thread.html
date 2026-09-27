@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ d['title'] }} · Discuss · Fresh Feed{% endblock %}
+
+{% block body %}
+<a class="back" href="{{ url_for('discuss') }}">← Back to Discuss</a>
+
+<article class="op">
+  <h1>{{ d['title'] }}</h1>
+  <div class="c-head">
+    <span class="c-who">Listener-{{ d['anon_id'][:4]|upper }}</span>
+    <span class="c-when">{{ d['created_at']|ago }}</span>
+  </div>
+  <p class="op-body">{{ d['body'] }}</p>
+</article>
+
+<section id="replies" class="comments">
+  <h2>{{ replies|length }} {{ 'reply' if replies|length == 1 else 'replies' }}</h2>
+
+  <form class="comment-form" method="post" action="{{ url_for('discuss_reply', disc_id=d['id']) }}">
+    <textarea name="body" rows="3" maxlength="2000"
+              placeholder="Add to the conversation… (as {{ anon_name }})"></textarea>
+    <button type="submit">Reply</button>
+  </form>
+
+  {% if replies %}
+    <ul class="comment-list">
+      {% for r in replies %}
+        <li>
+          <div class="c-head">
+            <span class="c-who">Listener-{{ r['anon_id'][:4]|upper }}</span>
+            <span class="c-when">{{ r['created_at']|ago }}</span>
+          </div>
+          <p class="c-body">{{ r['body'] }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No replies yet — be the first.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -12,6 +12,7 @@
     <nav>
       <a href="{{ url_for('discover') }}" class="{{ 'on' if request.endpoint=='discover' }}">Discover</a>
       <a href="{{ url_for('rising') }}" class="{{ 'on' if request.endpoint=='rising' }}">Rising</a>
+      <a href="{{ url_for('discuss') }}" class="{{ 'on' if request.endpoint in ['discuss','thread'] }}">Discuss</a>
       <a href="{{ url_for('stats') }}" class="{{ 'on' if request.endpoint=='stats' }}">Stats</a>
       <a href="{{ url_for('submit') }}" class="post-btn">＋ Post a track</a>
     </nav>

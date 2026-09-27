@@ -117,3 +117,17 @@ button[type=submit]{align-self:flex-start;background:var(--accent);color:var(--a
 .or-divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:2px 0}
 .or-divider::before,.or-divider::after{content:"";flex:1;height:1px;background:var(--line)}
 input[type=file]{padding:8px;background:var(--bg);border:1px dashed var(--line);border-radius:9px;cursor:pointer;width:100%}
+
+/* ---- discussion board ---- */
+.new-thread{margin:0 0 20px}
+.new-thread summary{display:inline-block;list-style:none;cursor:pointer}
+.new-thread summary::-webkit-details-marker{display:none}
+.thread-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px}
+.thread-list li{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.thread-title{font-weight:700;font-size:17px}
+.thread-snip{margin:6px 0 8px;color:var(--muted);font-size:14px}
+.thread-meta{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13px}
+.thread-meta .replies{margin-left:auto;font-weight:600}
+.op h1{margin:0 0 8px;font-size:24px}
+.op-body{white-space:pre-wrap;margin:8px 0 0}
+.op{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:8px}

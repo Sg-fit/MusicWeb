@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Discuss · Fresh Feed{% endblock %}
+
+{% block body %}
+<div class="hero">
+  <h1>Discuss</h1>
+  <p>Talk about music, share what you're working on, ask for feedback, or hype a track you found. Posting as <strong>{{ anon_name }}</strong> — no account needed.</p>
+</div>
+
+<details class="new-thread">
+  <summary class="post-btn big">＋ Start a discussion</summary>
+  <form class="post-form" method="post" action="{{ url_for('discuss') }}" style="margin-top:12px">
+    <label>Title *
+      <input name="title" maxlength="140" placeholder="e.g. How do you find new artists?" required>
+    </label>
+    <label>What's on your mind? *
+      <textarea name="body" rows="4" maxlength="2000" placeholder="Say as much or as little as you like." required></textarea>
+    </label>
+    <button type="submit">Post discussion</button>
+  </form>
+</details>
+
+{% if threads %}
+  <ul class="thread-list">
+    {% for t in threads %}
+      <li>
+        <a class="thread-title" href="{{ url_for('thread', disc_id=t['id']) }}">{{ t['title'] }}</a>
+        <p class="thread-snip">{{ t['body'][:140] }}{{ '…' if t['body']|length > 140 }}</p>
+        <div class="thread-meta">
+          <span>Listener-{{ t['anon_id'][:4]|upper }}</span>
+          <span>· {{ t['created_at']|ago }}</span>
+          <span class="replies">💬 {{ t['replies'] }}</span>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted" style="margin-top:20px">No discussions yet — start the first one.</p>
+{% endif %}
+{% endblock %}
