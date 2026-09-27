@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Experiment Stats · Fresh Feed{% endblock %}
+
+{% block body %}
+<div class="hero">
+  <h1>Experiment stats</h1>
+  <p>Live results of the A/B test. Listeners are split randomly into two feeds. If the <strong>fair</strong> feed spreads plays across more artists (higher “reached”, fewer “unheard”, lower top-track share) than the <strong>popular</strong> feed, that’s evidence fair exposure actually helps small musicians get heard.</p>
+</div>
+
+<div class="ab">
+  {% for v in ['fair','popular'] %}
+    {% set d = pv[v] %}
+    <div class="ab-col {{ v }}">
+      <h2>{{ 'Fair feed' if v=='fair' else 'Popular feed' }}</h2>
+      <p class="sub">{{ 'least-seen first' if v=='fair' else 'most-played first' }}</p>
+      <div class="metric"><span class="num">{{ d.listeners }}</span><span class="lab">listeners</span></div>
+      <div class="metric"><span class="num">{{ d.reached }}</span><span class="lab">of {{ total_tracks }} tracks got ≥1 play</span></div>
+      <div class="metric"><span class="num">{{ d.unheard }}</span><span class="lab">tracks still unheard</span></div>
+      <div class="metric"><span class="num">{{ d.top_share if d.top_share is not none else '—' }}{{ '%' if d.top_share is not none }}</span><span class="lab">of plays went to the single top track</span></div>
+      <div class="metric small"><span class="num">{{ d.plays }}</span><span class="lab">plays · {{ d.likes }} likes</span></div>
+    </div>
+  {% endfor %}
+</div>
+
+<p class="readnote">Read it like this: the fair feed is working if it has <em>more</em> tracks reached, <em>fewer</em> unheard, and a <em>lower</em> top-track share — i.e. attention is spread around instead of piling onto one hit.</p>
+
+<h2 class="tbl-h">Every track</h2>
+<div class="tablewrap">
+<table class="tbl">
+  <thead><tr><th>Title</th><th>Artist</th><th>Shown</th><th>Plays</th><th>Likes</th><th>Love %</th></tr></thead>
+  <tbody>
+  {% for t in tracks %}
+    <tr>
+      <td><a href="{{ url_for('track_page', track_id=t['id']) }}">{{ t['title'] }}</a></td>
+      <td>{{ t['artist'] }}</td>
+      <td>{{ t['impressions'] }}</td>
+      <td>{{ t['plays'] }}</td>
+      <td>{{ t['likes'] }}</td>
+      <td>{% set r = like_rate(t) %}{{ (r ~ '%') if r is not none else '—' }}</td>
+    </tr>
+  {% endfor %}
+  {% if not tracks %}<tr><td colspan="6" class="muted">No tracks yet.</td></tr>{% endif %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

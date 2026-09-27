@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# App data — never commit the live database
+freshfeed.db
+*.sqlite
+*.db
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

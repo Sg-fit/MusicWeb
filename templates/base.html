@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Fresh Feed{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('discover') }}">🎧 Fresh&nbsp;Feed</a>
+    <nav>
+      <a href="{{ url_for('discover') }}" class="{{ 'on' if request.endpoint=='discover' }}">Discover</a>
+      <a href="{{ url_for('rising') }}" class="{{ 'on' if request.endpoint=='rising' }}">Rising</a>
+      <a href="{{ url_for('stats') }}" class="{{ 'on' if request.endpoint=='stats' }}">Stats</a>
+      <a href="{{ url_for('submit') }}" class="post-btn">＋ Post a track</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    {% block body %}{% endblock %}
+  </main>
+
+  <footer class="foot">
+    <span>Every track gets an equal shot. Ranked by how much people love it, not how famous it is.</span>
+  </footer>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

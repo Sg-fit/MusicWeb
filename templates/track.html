@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ t['title'] }} · Fresh Feed{% endblock %}
+
+{% block body %}
+<a class="back" href="{{ url_for('discover') }}">← Back to Discover</a>
+
+<div class="grid single">
+  {% include "_card.html" %}
+</div>
+
+<section id="comments" class="comments">
+  <h2>Discussion</h2>
+
+  <form class="comment-form" method="post" action="{{ url_for('comment', track_id=t['id']) }}">
+    <textarea name="body" rows="3" maxlength="500"
+              placeholder="Say something about this track… (posting as {{ anon_name }})"></textarea>
+    <button type="submit">Post comment</button>
+  </form>
+
+  {% if comments %}
+    <ul class="comment-list">
+      {% for c in comments %}
+        <li>
+          <div class="c-head">
+            <span class="c-who">Listener-{{ c['anon_id'][:4]|upper }}</span>
+            <span class="c-when">{{ c['created_at']|ago }}</span>
+          </div>
+          <p class="c-body">{{ c['body'] }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No comments yet — start the conversation.</p>
+  {% endif %}
+</section>
+{% endblock %}

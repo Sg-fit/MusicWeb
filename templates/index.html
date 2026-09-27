@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Rising' if tab=='rising' else 'Discover' }} · Fresh Feed{% endblock %}
+
+{% block body %}
+<div class="hero">
+  {% if tab == 'rising' %}
+    <h1>Rising</h1>
+    <p>Ranked by how much listeners love each track — the like rate — not by play counts. A song with few plays but a high love rate rises above a popular one people skip.</p>
+  {% else %}
+    <h1>Discover</h1>
+    <p>Fresh and least-heard tracks come first, so every artist gets real ears — no matter how many followers they have. You’re listening as <strong>{{ anon_name }}</strong>.</p>
+  {% endif %}
+</div>
+
+{% if not tracks %}
+  <div class="empty">
+    <p>No tracks yet.</p>
+    <a class="post-btn" href="{{ url_for('submit') }}">＋ Be the first to post</a>
+  </div>
+{% else %}
+  <div class="grid">
+    {% for t in tracks %}
+      {% include "_card.html" %}
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

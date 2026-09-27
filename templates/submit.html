@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Post a track · Fresh Feed{% endblock %}
+
+{% block body %}
+<div class="hero">
+  <h1>Post a track</h1>
+  <p>No account needed. Paste a link to your music — YouTube, SoundCloud, or a direct audio file. It goes into Discover with an equal shot at being heard.</p>
+</div>
+
+{% if errors %}
+  <ul class="errors">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
+{% endif %}
+
+<form class="post-form" method="post" action="{{ url_for('submit') }}">
+  <label>Track title *
+    <input name="title" value="{{ title or '' }}" maxlength="120" placeholder="e.g. Midnight in the Key of C" required>
+  </label>
+  <label>Artist name
+    <input name="artist" value="{{ artist or '' }}" maxlength="80" placeholder="leave blank to stay Anonymous">
+  </label>
+  <label>Link to the track *
+    <input name="url" value="{{ url or '' }}" type="url" placeholder="https://soundcloud.com/… or https://youtu.be/…" required>
+  </label>
+  <label>A short note (optional)
+    <textarea name="note" rows="3" maxlength="280" placeholder="What is it? What were you going for?">{{ note or '' }}</textarea>
+  </label>
+  <button type="submit" class="post-btn big">Post to Fresh Feed</button>
+</form>
+{% endblock %}

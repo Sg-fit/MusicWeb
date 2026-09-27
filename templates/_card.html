@@ -1,0 +1,26 @@
+<article class="card" data-id="{{ t['id'] }}">
+  <div class="card-head">
+    <div class="titles">
+      <a class="track-title" href="{{ url_for('track_page', track_id=t['id']) }}">{{ t['title'] }}</a>
+      <span class="artist">{{ t['artist'] }}</span>
+    </div>
+    <span class="badge">{{ t['kind'] }}</span>
+  </div>
+
+  {% if t['note'] %}<p class="note">{{ t['note'] }}</p>{% endif %}
+
+  <div class="player" data-embed="{{ t['embed'] or '' }}" data-kind="{{ t['kind'] }}" data-url="{{ t['url'] }}">
+    <button class="play-btn" type="button">▶ Play</button>
+  </div>
+
+  <div class="stats">
+    <button class="like-btn {{ 'liked' if t['id'] in liked }}" type="button" data-id="{{ t['id'] }}">
+      <span class="heart">{{ '♥' if t['id'] in liked else '♡' }}</span>
+      <span class="like-count">{{ t['likes'] }}</span>
+    </button>
+    <span class="stat">▶ <span class="play-count">{{ t['plays'] }}</span></span>
+    {% set r = like_rate(t) %}
+    {% if r is not none %}<span class="stat rate">{{ r }}% love</span>{% endif %}
+    <a class="comments-link" href="{{ url_for('track_page', track_id=t['id']) }}#comments">💬 Discuss</a>
+  </div>
+</article>
